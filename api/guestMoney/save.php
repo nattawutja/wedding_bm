@@ -20,15 +20,15 @@ try {
     if ($action === 'add') {
 
         $stmt = $pdo->prepare("
-            INSERT INTO guest (guest_name, money, remark,create_date,guest_type)
-            VALUES (:guest_name, :money, :remark,:create_date,:guestType)
+            INSERT INTO guests (guest_name, money, remark,created_at,guest_type)
+            VALUES (:guest_name, :money, :remark,:create_at,:guestType)
         ");
 
         $stmt->execute([
             ':guest_name'   => $guestName,
             ':money' => $money,
             ':remark'   => $remark,
-            ':create_date'   => $date,
+            ':create_at'   => $date,
             ':guestType' => $guestType
         ]);
 
@@ -42,11 +42,12 @@ try {
         }
 
         $stmt = $pdo->prepare("
-            UPDATE guest
+            UPDATE guests
             SET guest_name = :guest_name,
                 money = :money,
                 remark = :remark,
-                guest_type = :guestType
+                guest_type = :guestType,
+                edit_at = :edit_at
             WHERE id = :id
         ");
 
@@ -55,7 +56,8 @@ try {
             ':money' => $money,
             ':remark'   => $remark,
             ':id'     => $id,
-            ':guestType' => $guestType
+            ':guestType' => $guestType,
+            ':edit_at' => $date
         ]);
 
         header("Location: /guest.php");

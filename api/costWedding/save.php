@@ -18,13 +18,13 @@ try {
     if ($action === 'add') {
 
         $stmt = $pdo->prepare("
-            INSERT INTO cost_wedding (cost_name, money, remark,create_date) VALUES (:cost_name, :money, :remark,:create_date)");
+            INSERT INTO cost_wedding (cost_name, money, reamark,created_at) VALUES (:cost_name, :money, :remark,:created_at)");
 
         $stmt->execute([
             ':cost_name'   => $costName,
             ':money' => $money,
             ':remark'   => $remark,
-            ':create_date'   => $date,
+            ':created_at'   => $date,
         ]);
 
         header('Location: /cost.php');
@@ -40,7 +40,7 @@ try {
             UPDATE cost_wedding
             SET cost_name = :cost_name,
                 money = :money,
-                remark = :remark
+                reamark = :remark
             WHERE id = :id
         ");
 

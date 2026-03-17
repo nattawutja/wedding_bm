@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db.php';
 
-$title = "จัดการข้อมูลแขก";
+$title = "จัดการโต๊ะแขก";
 
 // Handle actions
 $success = '';
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     $id = (int) ($_POST['id'] ?? 0);
     if ($id) {
         try {
-            $pdo->prepare('UPDATE guest SET "statusDelete" = 1 WHERE id = ?')->execute([$id]);
+            $pdo->prepare('UPDATE guests SET statusDelete = 1 WHERE id = ?')->execute([$id]);
             $success = 'ลบข้อมูลเรียบร้อยแล้ว';
             header("Location: " . $_SERVER['PHP_SELF']);
             exit;
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit'
     $remark   = trim($_POST['remark'] ?? '');
     if ($id && $name) {
         try {
-            $pdo->prepare('UPDATE guest SET guest_name=?, money=?, remark=? WHERE id=?')
+            $pdo->prepare('UPDATE guests SET guest_name=?, money=?, remark=? WHERE id=?')
                 ->execute([$guestName, $money, $remark, $id]);
             $success = 'แก้ไขข้อมูลเรียบร้อยแล้ว ✨';
         } catch (PDOException $e) { $error = $e->getMessage(); }
@@ -41,12 +41,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit'
 $search = trim($_GET['q'] ?? '');
 try {
     if ($search) {
-        $sql = "SELECT *,CASE WHEN \"guest_type\" = 0 THEN 'ญาติฝั่งเจ้าบ่าว'
+        $sql = "SELECT *,CASE WHEN guest_type = 0 THEN 'ญาติฝั่งเจ้าบ่าว'
                     ELSE 'ญาติฝั่งเจ้าสาว'
                 END AS guest_type_name
-            FROM guest
-            WHERE \"guest_name\" ILIKE ?
-              AND \"statusDelete\" = 0
+            FROM guests
+            WHERE guest_name LIKE ?
+              AND statusDelete = 0
             ORDER BY id DESC
         ";
     
@@ -58,11 +58,11 @@ try {
         $sql = "
             SELECT *,
                 CASE 
-                    WHEN \"guest_type\" = 0 THEN 'ญาติฝั่งเจ้าบ่าว'
+                    WHEN guest_type = 0 THEN 'ญาติฝั่งเจ้าบ่าว'
                     ELSE 'ญาติฝั่งเจ้าสาว'
                 END AS guest_type_name
-            FROM guest
-            WHERE \"statusDelete\" = 0
+            FROM guests
+            WHERE statusDelete = 0
             ORDER BY id DESC
         ";
     
@@ -76,11 +76,11 @@ try {
 
 $total_guests = count($guests);
 // รวมเงินทั้งหมด (แนะนำ query แยก)
-$sumStmt = $pdo->query('SELECT COALESCE(SUM(money),0) AS total FROM guest where "statusDelete" = 0');
+$sumStmt = $pdo->query('SELECT COALESCE(SUM(money),0) AS total FROM guests where statusDelete = 0');
 $total_amount = $sumStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
 // รวมเงินทั้งหมด (แนะนำ query แยก)
-$sumStmtCost = $pdo->query('SELECT COALESCE(SUM(money),0) AS total FROM cost_wedding where "statusDelete" = 0');
+$sumStmtCost = $pdo->query('SELECT COALESCE(SUM(money),0) AS total FROM cost_wedding where statusDelete = 0');
 $total_cost = $sumStmtCost->fetch(PDO::FETCH_ASSOC)['total'];
 
 ?>
@@ -499,7 +499,7 @@ $total_cost = $sumStmtCost->fetch(PDO::FETCH_ASSOC)['total'];
   <div class="page-header">
     <button class="add-btn" onclick="openModal()">＋ เพิ่มรายการ</button>
     <div class="page-title">
-      <p>บันทึกชื่อแขกและจำนวนเงินซองของขวัญ 🌸</p>
+      <p>โต๊ะที่เต็มแล้ว และโต๊ะของฝั่งไหน🌸</p>
     </div>
   </div>
 
@@ -596,6 +596,16 @@ $total_cost = $sumStmtCost->fetch(PDO::FETCH_ASSOC)['total'];
         <label>ชื่อแขก *</label>
         <input type="text" name="guestName" id="form-name" placeholder="เช่น คุณสมชาย ใจดี" required>
       </div>
+
+      <div class="form-field">
+            <label>โต๊ะที่ *</label>
+            <select name="table" id="table">
+               <?php for($i = 1; $i < 31;$i++){ ?>
+                <option value="<?= $i ?>"><?= $i ?> </option>
+                
+               <?php } ?>
+            </select>
+        </div>
 
       <div class="form-field">
         <label>จำนวนเงินซอง (บาท) *</label>

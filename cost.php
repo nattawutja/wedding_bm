@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     $id = (int) ($_POST['id'] ?? 0);
     if ($id) {
         try {
-            $pdo->prepare('UPDATE cost_wedding SET "statusDelete" = 1 WHERE id = ?')->execute([$id]);
+            $pdo->prepare('UPDATE cost_wedding SET statusDelete = 1 WHERE id = ?')->execute([$id]);
             $success = 'ลบข้อมูลเรียบร้อยแล้ว';
             header("Location: " . $_SERVER['PHP_SELF']);
             exit;
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit'
     $remark   = trim($_POST['remark'] ?? '');
     if ($id && $name) {
         try {
-            $pdo->prepare('UPDATE cost_wedding SET cost_name=?, money=?, remark=? WHERE id=?')
+            $pdo->prepare('UPDATE cost_wedding SET cost_name=?, money=?, reamark=? WHERE id=?')
                 ->execute([$costName, $money, $remark, $id]);
             $success = 'แก้ไขข้อมูลเรียบร้อยแล้ว ✨';
         } catch (PDOException $e) { $error = $e->getMessage(); }
@@ -41,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit'
 $search = trim($_GET['q'] ?? '');
 try {
     if ($search) {
-        $sql = "SELECT * FROM cost_wedding WHERE \"cost_name\" ILIKE ? AND \"statusDelete\" = 0 ORDER BY id DESC";
+        $sql = "SELECT * FROM cost_wedding WHERE cost_name LIKE ? AND statusDelete = 0 ORDER BY id DESC";
         $stmt = $pdo->prepare($sql);
         $stmt->execute(['%' . $search . '%']);
     } else {
-        $sql = "SELECT * FROM cost_wedding WHERE \"statusDelete\" = 0 ORDER BY id DESC ";
+        $sql = "SELECT * FROM cost_wedding WHERE statusDelete = 0 ORDER BY id DESC ";
         $stmt = $pdo->query($sql);
     }
     $guests = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -56,7 +56,7 @@ try {
 
 $total_guests = count($guests);
 // รวมเงินทั้งหมด (แนะนำ query แยก)
-$sumStmt = $pdo->query('SELECT COALESCE(SUM(money),0) AS total FROM cost_wedding where "statusDelete" = 0');
+$sumStmt = $pdo->query('SELECT COALESCE(SUM(money),0) AS total FROM cost_wedding where statusDelete = 0');
 $total_amount = $sumStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
 ?>
@@ -457,6 +457,7 @@ $total_amount = $sumStmt->fetch(PDO::FETCH_ASSOC)['total'];
   <div class="nav-actions">
     <a href="guest.php" class="nav-btn">🏠 หน้าหลัก</a>
     <a href="cost.php" class="nav-btn">ค่าใช้จ่าย</a>
+    <a href="setup_table.php" class="nav-btn">จัดการโต๊ะแขก</a>
     <a href="/" class="nav-btn">ออกจากระบบ</a>
   </div>
 </nav>
@@ -518,7 +519,7 @@ $total_amount = $sumStmt->fetch(PDO::FETCH_ASSOC)['total'];
           <td class="text-center">
             <div class="actions">
               <button class="act-btn edit" title="แก้ไข"
-                onclick="openEdit(<?= $g['id'] ?>, '<?= addslashes(htmlspecialchars($g['cost_name'])) ?>', <?= $g['money'] ?>, '<?= addslashes(htmlspecialchars($g['remark'] ?? '')) ?>')">✏️</button>
+                onclick="openEdit(<?= $g['id'] ?>, '<?= addslashes(htmlspecialchars($g['cost_name'])) ?>', <?= $g['money'] ?>, '<?= addslashes(htmlspecialchars($g['reamark'] ?? '')) ?>')">✏️</button>
               <form method="POST" onsubmit="return confirm('ลบ <?= addslashes(htmlspecialchars($g['cost_name'])) ?> ใช่ไหม?')" style="display:inline">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<?= $g['id'] ?>">
@@ -528,7 +529,7 @@ $total_amount = $sumStmt->fetch(PDO::FETCH_ASSOC)['total'];
           </td>
           <td class="guest-name"><?= $g['cost_name'] ?></td>
           <td><span class="amount-badge">฿<?= $g['money'] ?></span></td>
-          <td class="note-text"><?= $g['remark'] ? htmlspecialchars($g['remark']) : '—' ?></td>
+          <td class="note-text"><?= $g['reamark'] ? htmlspecialchars($g['reamark']) : '—' ?></td>
         </tr>
         <?php endforeach; ?>
         <?php endif; ?>
